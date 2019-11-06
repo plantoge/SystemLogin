@@ -11,11 +11,74 @@ class Auth extends CI_Controller
 
     public function index()
     {
-        $data['title'] = "Fauzi User Login";
-        $this->load->view('templates/auth_header', $data);
-        $this->load->view('auth/login');
-        $this->load->view('templates/auth_footer');
+        $this->form_validation->set_rules('email', 'email', 'required|trim|valid_email');
+        $this->form_validation->set_rules('password', 'password', 'required|trim');
+        // Jika form_validation sama dengan false/gagal maka
+        // jalankan kembali tampilan halaman registrasi dengan pesan error tapi
+        // jika form validation sama dengan true/berhasil maka
+        // akan menjalankan proses dibawahnya "else"
+        if($this->form_validation->run() == false){
+            $data['title'] = "Fauzi User Login";
+            $this->load->view('templates/auth_header', $data);
+            $this->load->view('auth/login');
+            $this->load->view('templates/auth_footer');
+        }else {
+            $this->_login();
+        }
     } 
+
+    private function _login()
+    {
+        $email = $this->input->post('email');
+        $password = $this->input->post('password');
+        $user = $this->db->get_where('user', ['email' => $email])->row_array();
+        
+        // Jika $user bernilai true alias NOT NULL
+        if($user != null){
+            // Jika user sudah aktif alias 1
+            if($user['is_active'] == 1){
+                // jika password user benar
+                if(password_verify($password, $user['password'])){
+                    $data = [
+                        'email' => $user['email'],
+                        'role_id' => $user['role_id']
+                    ];
+                    $this->session->set_userdata($data);
+                    redirect('user');
+                }else{
+                    $this->session->set_flashdata('message', '
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Danger!</strong> Wrong password!
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    ');
+                    redirect('auth');
+                }
+            }else {
+                $this->session->set_flashdata('message', '
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>Danger!</strong> This email has not been activated!
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                ');
+                redirect('auth');    
+            }
+        } else {
+            $this->session->set_flashdata('message', '
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Danger!</strong> Email is not registered!
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            ');
+            redirect('auth');
+        }
+    }
     
     public function registration()
     {
@@ -57,6 +120,22 @@ class Auth extends CI_Controller
             ');
             redirect('auth');
         }
+    }
+
+    public function logout()
+    {
+        $this->session->unset_userdata('email');
+        $this->session->unset_userdata('role_id');
+
+        $this->session->set_flashdata('message', '
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                You have been logged out!
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        ');
+        redirect('auth');
     }
 }
 
