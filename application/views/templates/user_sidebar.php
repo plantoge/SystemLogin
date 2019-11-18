@@ -16,11 +16,11 @@
 <?php 
   $role_id = $this->session->userdata('role_id');
   $queryMenu = "
-      SELECT user_access_menu.id, menu
-      FROM user_access_menu JOIN user_menu
-      ON user_access_menu.menu_id = user_menu.id
-      WHERE user_access_menu.role_id = $role_id
-      ORDER BY user_access_menu.menu_id ASC
+      SELECT `user_access_menu`.`id`, `user_access_menu`.`menu_id`, `menu`
+      FROM `user_access_menu` JOIN `user_menu`
+      ON `user_access_menu`.`menu_id` = `user_menu`.`id`
+      WHERE `user_access_menu`.`role_id` = $role_id
+      ORDER BY `user_access_menu`.`menu_id` ASC
   ";
 
   $menu = $this->db->query($queryMenu)->result_array();
@@ -35,27 +35,34 @@
   </div>
 
     <?php 
-      $menuId = $m['id'];
+      $menuId = $m['menu_id'];
       $querySubMenu = "
-          SELECT * FROM user_sub_menu JOIN user_menu
-          ON user_sub_menu.menu_id = user_menu.id 
-          WHERE user_sub_menu.menu_id = $menuId
-          AND user_sub_menu.is_active = 1
+          SELECT * FROM `user_sub_menu` 
+          WHERE `user_sub_menu`.`menu_id` = $menuId
+          AND `user_sub_menu`.`is_active` = 1
       "; 
 
       $subMenu = $this->db->query($querySubMenu)->result_array();
+      // var_dump($subMenu);
+      // var_dump($menuId);
+      // die;
     ?>
     
     <?php foreach ($subMenu as $sm) : ?>
         <!-- Nav Item - Dashboard -->
+    <?php if($sm['title'] == $title): ?>
+        <li class="nav-item active">
+    <?php else : ?>
         <li class="nav-item">
+    <?php endif; ?>
           <a class="nav-link" href="<?= base_url($sm['url']); ?>">
             <i class="<?= $sm['icon']; ?>"></i>
             <span><?= $sm['title'] ?></span></a>
         </li>
-        <!-- Divider -->
-        <hr class="sidebar-divider">
+        
     <?php endforeach; ?>
+    <!-- Divider -->
+    <hr class="sidebar-divider">
 
 <?php endforeach; ?>
 

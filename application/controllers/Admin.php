@@ -13,7 +13,7 @@ class Admin extends CI_Controller
     {
 
         $data['user'] = $this->db->get_where('user', ['email' => $this->session->userdata('email')])->row_array();
-        $data['title'] = 'My Dashboard';
+        $data['title'] = 'Dashboard';
 
         $this->load->view('templates/user_header', $data);
         $this->load->view('templates/user_sidebar', $data);
