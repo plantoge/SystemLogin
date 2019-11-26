@@ -47,7 +47,25 @@
 
   <!-- Custom scripts for all pages-->
   <script src="<?= base_url('assets/'); ?>js/sb-admin-2.min.js"></script>
+  
+  <script>
+      $('.form-check-input').on('click', function(){
+        const menu_id = $(this).data('menu');
+        const role_id = $(this).data('role');
 
+        $.ajax({
+          url: "<?= base_url('admin/changeaccess'); ?>",
+          type: 'post',
+          data: {
+            menuId: menu_id,
+            roleId: role_id
+          },
+          success: function(){
+            document.location.href="<?= base_url('admin/roleaccess/'); ?>" + role_id;
+          }
+        });
+      });
+  </script>
 </body>
 
 </html>
